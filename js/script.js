@@ -1,86 +1,87 @@
-const canvas = document.getElementById('visualizer');
-const ctx = canvas.getContext('2d', { alpha: false }); // Optimization: disable alpha
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let player, instrument, analyser, dataArray;
-let masterGain = audioCtx.createGain();
+const masterGain = audioCtx.createGain();
+const analyser = audioCtx.createAnalyser();
+let player, instrument;
 
-// Initial Setup
-analyser = audioCtx.createAnalyser();
-analyser.fftSize = 1024; // Lower FFT size = less lag
+// Connection chain
 masterGain.connect(analyser);
 analyser.connect(audioCtx.destination);
-dataArray = new Uint8Array(analyser.frequencyBinCount);
+analyser.fftSize = 1024; // Optimized for less lag
 
-// SF2 Loading Logic
-document.getElementById('sf2Input').onchange = async (e) => {
-    const file = e.target.files[0];
-    const arrayBuffer = await file.arrayBuffer();
-    // Using a generic SF2 loader (Requires a library compatible with browser binary)
-    // For this example, we'll assume 'sf2-player' style logic
-    document.getElementById('status').innerText = "SF2 Loaded!";
-    document.getElementById('playBtn').disabled = false;
-    document.getElementById('playBtn').innerText = "Start Session";
+// 1. Separate Loaders
+document.getElementById('midiFile').onchange = async (e) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        player.loadArrayBuffer(event.target.result);
+        log("MIDI Loaded Successfully.");
+        checkReady();
+    };
+    reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-// MIDI Player with Lag Optimization
-player = new MidiPlayer.Player(event => {
-    if (event.name === 'Note on' && event.velocity > 0) {
-        const vol = document.getElementById('volSlider').value;
-        // Optimization: Use a scheduler to prevent audio jitter
-        playNote(event.noteName, (event.velocity / 127) * vol);
-    }
-});
+document.getElementById('sf2File').onchange = async (e) => {
+    log("Processing Soundfont... please wait.");
+    const buffer = await e.target.files[0].arrayBuffer();
+    // Using SF2 Player logic
+    try {
+        instrument = new window.SF2Player(audioCtx, buffer); 
+        log("Soundfont Loaded Successfully.");
+        checkReady();
+    } catch(err) { log("Error: Invalid SF2 file."); }
+};
 
-function playNote(note, volume) {
-    if (!instrument) return;
-    instrument.play(note, audioCtx.currentTime, { gain: volume }).connect(masterGain);
+function checkReady() {
+    if (instrument && player) {
+        const btn = document.getElementById('playBtn');
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        log("SYSTEM READY. Press Play.");
+    }
 }
 
-// Optimized Drawing Loop
-let lastTime = 0;
-function draw(time) {
-    // Limit to 60fps manually if needed
-    requestAnimationFrame(draw);
-    
-    const mode = document.getElementById('visMode').value;
-    ctx.fillStyle = '#000';
+// 2. Transport Logic
+document.getElementById('playBtn').onclick = () => {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (player.isPlaying()) {
+        player.pause();
+        document.getElementById('playBtn').innerText = "▶ PLAY MIDI";
+    } else {
+        player.play();
+        document.getElementById('playBtn').innerText = "⏸ PAUSE";
+    }
+};
+
+// 3. Visualization Loop (Spectrum Split)
+const canvas = document.getElementById('visualizer');
+const ctx = canvas.getContext('2d');
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+function animate() {
+    requestAnimationFrame(animate);
+    const mode = document.getElementById('visSelect').value;
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    analyser.getByteTimeDomainData(dataArray);
-
     if (mode === 'SpectrumSplit') {
+        analyser.getByteTimeDomainData(dataArray);
         const rows = 4;
-        const rowH = canvas.height / rows;
-        const colors = ['#ff0055', '#00ffcc', '#ffff00', '#0077ff'];
-        
+        const h = canvas.height / rows;
+        const colors = ['#f00', '#f90', '#0cf', '#c0f'];
         for (let r = 0; r < rows; r++) {
             ctx.beginPath();
             ctx.strokeStyle = colors[r];
-            ctx.lineWidth = 2;
             let x = 0;
-            let slice = canvas.width / (dataArray.length / rows);
+            let step = canvas.width / (dataArray.length / rows);
             for (let i = 0; i < dataArray.length / rows; i++) {
-                const v = dataArray[i + (r * (dataArray.length/rows))] / 128.0;
-                const y = (v * rowH / 2) + (r * rowH);
+                const v = dataArray[i + (r * 256)] / 128;
+                const y = (v * h / 2) + (r * h);
                 if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                x += slice;
+                x += step;
             }
             ctx.stroke();
         }
     }
-    // ... add other modes here
 }
-draw();
+animate();
 
-// Handle File Inputs
-document.getElementById('midiInput').onchange = e => {
-    const reader = new FileReader();
-    reader.onload = e => player.loadArrayBuffer(e.target.result);
-    reader.readAsArrayBuffer(e.target.files[0]);
-    document.getElementById('status').innerText = "MIDI Loaded. Press Start.";
-};
-
-document.getElementById('playBtn').onclick = () => {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    player.isPlaying() ? player.pause() : player.play();
-};
+function log(msg) { document.getElementById('debugLog').innerText = "System: " + msg; }
