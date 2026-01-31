@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIDI Pro - SF2 & Oscilloscope</title>
+    <title>Pro MIDI Console</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/midi-player-js@2.0.16/browser/midiplayer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/spunaudio-sf2-player@1.0.0/dist/index.min.js"></script>
@@ -11,48 +10,55 @@
 <body>
     <canvas id="visualizer"></canvas>
 
-    <div class="ui-panel">
-        <div class="panel-section">
-            <div class="input-group">
-                <label>MIDI File</label>
-                <input type="file" id="midiInput" accept=".mid,.midi">
+    <div class="main-console">
+        <div class="upload-area">
+            <div class="file-box">
+                <label>1. MIDI File</label>
+                <input type="file" id="midiFile" accept=".mid">
             </div>
-            <div class="input-group">
-                <label>SoundFont (.sf2)</label>
-                <input type="file" id="sf2Input" accept=".sf2">
+            <div class="file-box">
+                <label>2. Soundfont</label>
+                <input type="file" id="sf2File" accept=".sf2">
             </div>
         </div>
 
-        <div class="panel-grid">
-            <button id="playBtn" disabled>Upload MIDI & SF2</button>
-            <div class="control-item">
-                <label>Speed: <span id="speedVal">100%</span></label>
-                <input type="range" id="speedSlider" min="50" max="200" value="100">
+        <div class="transport-bar">
+            <button title="Prev">⏮</button>
+            <button title="Repeat" id="repeatBtn">🔄</button>
+            <button title="Shuffle">🔀</button>
+            <button id="playBtn" class="play-trigger">▶ PLAY MIDI</button>
+            <button title="Playlist">≡</button>
+            <button title="Settings">⏲</button>
+            <button title="Next">⏭</button>
+        </div>
+
+        <div class="settings-row">
+            <div class="setting">
+                <label>Speed: <span id="speedTxt">100</span>%</label>
+                <input type="range" id="speedSld" min="50" max="200" value="100">
             </div>
-            <div class="control-item">
+            <div class="setting">
                 <label>Volume</label>
-                <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.7">
+                <input type="range" id="volSld" min="0" max="1" step="0.1" value="0.8">
             </div>
-            <div class="control-item">
+            <div class="setting">
                 <label>Visualization</label>
-                <select id="visMode">
+                <select id="visSelect">
                     <option value="SpectrumSplit">Spectrum Split</option>
                     <option value="Waveforms">Waveforms</option>
-                    <option value="Spectrum">Spectrum</option>
                 </select>
             </div>
-            <div class="control-item">
+            <div class="setting">
                 <label>UI Font</label>
                 <select id="fontSelect">
                     <option value="monospace">Default Mono</option>
                     <option value="Orbitron">Orbitron</option>
-                    <option value="UPLOAD">-- Load Custom --</option>
+                    <option value="ADD">Add Custom...</option>
                 </select>
             </div>
         </div>
-        <div id="status">Waiting for files...</div>
+        <div id="debugLog">System: Ready. Please load MIDI and SF2.</div>
     </div>
-
-    <script src="js/script.js"></script>
+    <input type="file" id="customFontInp" hidden accept=".ttf,.otf">
 </body>
 </html>
