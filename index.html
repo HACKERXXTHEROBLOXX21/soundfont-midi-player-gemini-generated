@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Pro Visualizer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/midi-player-js@2.0.16/browser/midiplayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
+</head>
+<body>
+    <canvas id="visualizer"></canvas>
+
+    <div class="ui-container">
+        <div class="header">
+            <input type="file" id="fileInput" accept=".mid,.midi">
+            <button id="playBtn" disabled>Initializing...</button>
+        </div>
+
+        <div class="dashboard">
+            <div class="control-box">
+                <label>Volume</label>
+                <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.7">
+            </div>
+            <div class="control-box">
+                <label>Speed (%)</label>
+                <input type="range" id="speedSlider" min="20" max="200" value="100">
+            </div>
+            <div class="control-box">
+                <label>Visualization Mode</label>
+                <select id="visMode">
+                    <option value="Waveforms">Waveforms</option>
+                    <option value="Filled">Filled Waveforms</option>
+                    <option value="SpectrumSplit">Spectrum Split</option>
+                    <option value="Spectrum">Spectrum</option>
+                </select>
+            </div>
+        </div>
+        <div id="status">Upload a MIDI file to start</div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
