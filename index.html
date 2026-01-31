@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIDI Pro Visualizer</title>
+    <title>Gemini MIDI Workstation</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/midi-player-js@2.0.16/browser/midiplayer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
@@ -11,32 +11,43 @@
 <body>
     <canvas id="visualizer"></canvas>
 
-    <div class="ui-container">
-        <div class="header">
-            <input type="file" id="fileInput" accept=".mid,.midi">
-            <button id="playBtn" disabled>Initializing...</button>
+    <div class="ui-panel">
+        <div class="panel-header">
+            <input type="file" id="midiInput" accept=".mid,.midi" hidden>
+            <button onclick="document.getElementById('midiInput').click()">Upload MIDI</button>
+            <button id="playBtn" disabled>Loading Instrument...</button>
         </div>
 
-        <div class="dashboard">
-            <div class="control-box">
+        <div class="panel-grid">
+            <div class="control-item">
                 <label>Volume</label>
-                <input type="range" id="volSlider" min="0" max="1" step="0.01" value="0.7">
+                <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.7">
             </div>
-            <div class="control-box">
+            <div class="control-item">
                 <label>Speed (%)</label>
                 <input type="range" id="speedSlider" min="20" max="200" value="100">
             </div>
-            <div class="control-box">
-                <label>Visualization Mode</label>
+            <div class="control-item">
+                <label>Visualization</label>
                 <select id="visMode">
                     <option value="Waveforms">Waveforms</option>
                     <option value="Filled">Filled Waveforms</option>
                     <option value="SpectrumSplit">Spectrum Split</option>
-                    <option value="Spectrum">Spectrum</option>
+                    <option value="Spectrum">Frequency Spectrum</option>
                 </select>
             </div>
+            <div class="control-item">
+                <label>UI Font</label>
+                <select id="fontSelect">
+                    <option value="monospace">Default Mono</option>
+                    <option value="Orbitron">Orbitron</option>
+                    <option value="Roboto Mono">Roboto Mono</option>
+                    <option value="UPLOAD">-- Upload .ttf --</option>
+                </select>
+                <input type="file" id="fontUpload" accept=".ttf,.otf" hidden>
+            </div>
         </div>
-        <div id="status">Upload a MIDI file to start</div>
+        <div id="fileStatus">Ready to start.</div>
     </div>
 
     <script src="js/script.js"></script>
